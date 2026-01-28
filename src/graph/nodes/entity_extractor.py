@@ -176,14 +176,28 @@ def create_entity_extractor_node(
         deduplicated = list(concept_map.values())
         logger.info(f"After deduplication: {len(deduplicated)} concepts")
 
-        # Filter by relevance score (>= 0.5)
-        filtered = [c for c in deduplicated if c.relevance_score >= 0.5]
-        logger.info(f"After filtering (score >= 0.5): {len(filtered)} concepts")
+        # Filter to keep ONLY the query entity (exact match with research_topic)
+        normalized_topic = normalizer.normalize(state["research_topic"])
+        filtered = [c for c in deduplicated if normalizer.normalize(c.name) == normalized_topic]
+        logger.info(f"After filtering (query entity only, matching '{state['research_topic']}'): {len(filtered)} concepts")
 
-        # Sort by relevance score and keep top 20
+        # Handle case where query entity was not extracted
+        if not filtered:
+            logger.warning(f"Query entity '{state['research_topic']}' not found in extracted concepts")
+            logger.info(f"Available extracted concepts: {[f'{c.name}({c.relevance_score:.2f})' for c in deduplicated[:10]]}")
+
+            # Fallback: Use highest relevance concept if it's close enough (>= 0.8)
+            if deduplicated and deduplicated[0].relevance_score >= 0.8:
+                logger.info(f"Using fallback: highest relevance concept '{deduplicated[0].name}' (score: {deduplicated[0].relevance_score:.2f})")
+                filtered = [deduplicated[0]]
+            else:
+                logger.error("No suitable query entity found. Continuing with empty entity list.")
+                errors.append(f"Query entity '{state['research_topic']}' not extracted from search results")
+
+        # Sort by relevance score
         sorted_concepts = sorted(filtered, key=lambda c: c.relevance_score, reverse=True)
-        top_concepts = sorted_concepts[:20]
-        logger.info(f"Keeping top 20 concepts with scores: {[f'{c.name}({c.relevance_score:.2f})' for c in top_concepts[:5]]}...")
+        top_concepts = sorted_concepts  # Keep only query entity
+        logger.info(f"Query entity concepts: {[f'{c.name}({c.relevance_score:.2f})' for c in top_concepts]}")
 
         return {
             "concepts": top_concepts,

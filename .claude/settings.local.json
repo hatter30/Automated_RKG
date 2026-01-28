@@ -3,7 +3,9 @@
     "allow": [
       "Bash(pip install:*)",
       "Bash(python -m src.main:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(tee:*)",
+      "Bash(gh pr list:*)"
     ],
     "additionalDirectories": [
       "d:\\june5\\Automated_RKG\\output\\logseq"

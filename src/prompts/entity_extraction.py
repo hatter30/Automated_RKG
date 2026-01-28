@@ -45,7 +45,7 @@ Response format:
       "aliases": ["Alternative Name 1", "Alternative Name 2"],
       "relevance_score": 0.95,
       "technical_details": "내부 작동 방식, 아키텍처, 알고리즘 또는 메커니즘에 대한 자세한 설명 (한글로 작성). 해당되는 경우 기술적 접근 방식을 단계별로 설명합니다.",
-      "key_components": ["구성 요소 1: 간단한 설명", "구성 요소 2: 간단한 설명"],
+      "key_components": ["Component Name (English): 간단한 설명 (한글)", "Component Name 2 (English): 간단한 설명 (한글)"],
       "implementation_notes": "이 개념을 구현하거나 사용하기 위한 실용적인 지침 (한글로 작성). 프레임워크, 라이브러리, 모범 사례 또는 일반적인 함정을 포함합니다.",
       "use_cases": ["컨텍스트가 포함된 사용 사례 1", "컨텍스트가 포함된 사용 사례 2"]
     }
@@ -55,11 +55,12 @@ Response format:
 IMPORTANT:
 - Make descriptions 2-3 paragraphs minimum for core concepts (in Korean)
 - technical_details should explain the "how" in depth (in Korean)
-- key_components should list 3-5 items for technologies/methods (in Korean)
+- key_components should list 3-5 items for technologies/methods with format: "Component Name (English): explanation (Korean)"
 - implementation_notes should be practical and actionable (in Korean)
 - use_cases should be specific real-world examples (in Korean)
 - These extra fields (technical_details, key_components, etc.) are OPTIONAL: only include if information is available in sources
-- ALL text content must be written in fluent, natural Korean
+- ALL text content must be written in fluent, natural Korean, EXCEPT key_components names which should be in English
+- **KEY_COMPONENTS FORMAT**: The key_components field should be a list of STRINGS only, formatted as "Component Name: explanation". Do NOT use nested objects or dictionaries
 """
 
 ENTITY_EXTRACTION_USER_PROMPT = """Research Topic: {topic}
