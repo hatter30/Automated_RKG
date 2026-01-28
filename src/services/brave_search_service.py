@@ -1,6 +1,6 @@
 """Service for interacting with Brave Search API."""
 import requests
-from typing import List, Dict, Optional, Any
+from typing import Any
 from tenacity import retry, stop_after_attempt, wait_exponential
 import logging
 
@@ -16,7 +16,7 @@ class BraveSearchService:
         self.base_url = "https://api.search.brave.com/res/v1/web/search"
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    def search(self, query: str, count: Optional[int] = None) -> List[Dict[str, Any]]:
+    def search(self, query: str, count: int | None = None) -> list[dict[str, Any]]:
         """
         Execute a search query and return results.
 

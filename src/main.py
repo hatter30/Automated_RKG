@@ -1,7 +1,6 @@
 """Main entry point for the automated research system."""
 import logging
 from pathlib import Path
-from typing import Optional
 from config.settings import get_settings
 from src.services.openai_service import OpenAIService
 from src.services.brave_search_service import BraveSearchService
@@ -13,7 +12,7 @@ from src.utils.logging_config import setup_logging
 logger = logging.getLogger(__name__)
 
 
-def run_research(topic: str, output_dir: Optional[str] = None) -> str:
+def run_research(topic: str, output_dir: str | None = None) -> str:
     """
     Run the complete research workflow for a given topic.
 

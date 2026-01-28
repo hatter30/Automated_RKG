@@ -1,5 +1,5 @@
 """Component expander node for extracting key components as separate concepts."""
-from typing import Dict, Any, List
+from typing import Any
 import logging
 import json
 from src.models.state import ResearchState
@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 
 
 def _enrich_components(
-    components: List[Concept],
-    search_results: List[Dict],
+    components: list[Concept],
+    search_results: list[dict],
     openai_service: OpenAIService,
     research_topic: str,
-) -> List[Concept]:
+) -> list[Concept]:
     """
     Enrich component concepts with detailed information from search results.
     Uses the same entity extraction prompt as the main entity extractor for consistency.
@@ -135,7 +135,7 @@ def create_component_expander_node(openai_service: OpenAIService):
     """
     normalizer = ConceptNormalizer()
 
-    def expand_components_node(state: ResearchState) -> Dict[str, Any]:
+    def expand_components_node(state: ResearchState) -> dict[str, Any]:
         """
         Expand key components into separate concepts.
 

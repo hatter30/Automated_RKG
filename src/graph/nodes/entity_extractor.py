@@ -1,5 +1,5 @@
 """Entity extraction node for LangGraph workflow."""
-from typing import Dict, Any, List
+from typing import Any
 import json
 import logging
 import asyncio
@@ -31,7 +31,7 @@ def create_entity_extractor_node(
         Node function for entity extraction
     """
 
-    async def process_batch_async(batch: List[dict], batch_index: int, topic: str) -> tuple[List[Concept], List[str]]:
+    async def process_batch_async(batch: list[dict], batch_index: int, topic: str) -> tuple[list[Concept], list[str]]:
         """
         Process a single batch of search results asynchronously.
 
@@ -43,8 +43,8 @@ def create_entity_extractor_node(
         Returns:
             Tuple of (extracted concepts, errors)
         """
-        batch_concepts: List[Concept] = []
-        batch_errors: List[str] = []
+        batch_concepts: list[Concept] = []
+        batch_errors: list[str] = []
 
         try:
             # Format batch for prompt
@@ -101,7 +101,7 @@ def create_entity_extractor_node(
 
         return batch_concepts, batch_errors
 
-    def extract_entities_node(state: ResearchState) -> Dict[str, Any]:
+    def extract_entities_node(state: ResearchState) -> dict[str, Any]:
         """
         Extract concepts/entities from search results with parallel processing.
 
@@ -134,8 +134,8 @@ def create_entity_extractor_node(
         batch_results = asyncio.run(process_all_batches())
 
         # Collect all concepts and errors
-        concepts: List[Concept] = []
-        errors: List[str] = []
+        concepts: list[Concept] = []
+        errors: list[str] = []
 
         for batch_concepts, batch_errors in batch_results:
             concepts.extend(batch_concepts)

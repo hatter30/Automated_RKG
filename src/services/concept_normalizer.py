@@ -1,5 +1,4 @@
 """Service for normalizing concept names to canonical forms."""
-from typing import Dict, Set
 import re
 import unicodedata
 
@@ -8,8 +7,8 @@ class ConceptNormalizer:
     """Service for normalizing concept names to canonical forms."""
 
     def __init__(self):
-        self.canonical_map: Dict[str, str] = {}
-        self.known_concepts: Set[str] = set()
+        self.canonical_map: dict[str, str] = {}
+        self.known_concepts: set[str] = set()
 
     def normalize(self, concept_name: str) -> str:
         """

@@ -1,5 +1,5 @@
 """Utilities for markdown formatting."""
-from typing import Dict, List, Any
+from typing import Any
 import re
 
 
@@ -24,7 +24,7 @@ def sanitize_filename(filename: str) -> str:
 
 
 def format_logseq_page(
-    title: str, sections: Dict[str, List[str]], metadata: Dict[str, Any] = None
+    title: str, sections: dict[str, list[str]], metadata: dict[str, Any] | None = None
 ) -> str:
     """
     Format a Logseq page with proper structure.

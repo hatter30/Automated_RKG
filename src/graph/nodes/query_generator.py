@@ -1,5 +1,5 @@
 """Query generation node for LangGraph workflow."""
-from typing import Dict, Any
+from typing import Any
 import json
 import logging
 from src.models.state import ResearchState
@@ -23,7 +23,7 @@ def create_query_generator_node(openai_service: OpenAIService):
         Node function for query generation
     """
 
-    def generate_queries_node(state: ResearchState) -> Dict[str, Any]:
+    def generate_queries_node(state: ResearchState) -> dict[str, Any]:
         """
         Generate search queries from the research topic.
 

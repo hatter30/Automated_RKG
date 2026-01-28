@@ -1,5 +1,5 @@
 """LangGraph state definition for research workflow."""
-from typing import TypedDict, List, Annotated, Dict, Any
+from typing import TypedDict, Annotated, Any
 from operator import add
 from .concept import Concept
 from .relationship import Relationship
@@ -12,21 +12,21 @@ class ResearchState(TypedDict):
     research_topic: str
 
     # Query Generation
-    search_queries: Annotated[List[str], add]
+    search_queries: Annotated[list[str], add]
 
     # Web Search
-    search_results: Annotated[List[Dict[str, Any]], add]  # Raw search results
+    search_results: Annotated[list[dict[str, Any]], add]  # Raw search results
 
     # Entity Extraction
-    concepts: Annotated[List[Concept], add]
+    concepts: Annotated[list[Concept], add]
 
     # Relationship Inference
-    relationships: Annotated[List[Relationship], add]
+    relationships: Annotated[list[Relationship], add]
 
     # Output Generation
     markdown_output: str
     output_path: str
 
     # Metadata
-    errors: Annotated[List[str], add]
+    errors: Annotated[list[str], add]
     step_count: int

@@ -1,5 +1,5 @@
 """Relationship inference node for LangGraph workflow."""
-from typing import Dict, Any, List
+from typing import Any
 import json
 import logging
 from src.models.state import ResearchState
@@ -25,7 +25,7 @@ def create_relationship_inferrer_node(openai_service: OpenAIService):
         Node function for relationship inference
     """
 
-    def infer_relationships_node(state: ResearchState) -> Dict[str, Any]:
+    def infer_relationships_node(state: ResearchState) -> dict[str, Any]:
         """
         Infer relationships between extracted concepts.
 
@@ -37,8 +37,8 @@ def create_relationship_inferrer_node(openai_service: OpenAIService):
         """
         logger.info(f"Inferring relationships between {len(state['concepts'])} concepts")
 
-        relationships: List[Relationship] = []
-        errors: List[str] = []
+        relationships: list[Relationship] = []
+        errors: list[str] = []
 
         try:
             # Format concepts for prompt
@@ -74,7 +74,7 @@ def create_relationship_inferrer_node(openai_service: OpenAIService):
                 is_inferred = rel_data.get("is_inferred", True)
 
                 # Create citations if provided
-                citations: List[Citation] = []
+                citations: list[Citation] = []
                 if "source_urls" in rel_data:
                     for url in rel_data["source_urls"]:
                         # Find matching search result

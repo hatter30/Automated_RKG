@@ -1,6 +1,5 @@
 """Service for interacting with OpenAI API."""
 from openai import OpenAI, AsyncOpenAI
-from typing import Optional
 import logging
 import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential

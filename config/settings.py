@@ -1,7 +1,6 @@
 """Application settings loaded from environment variables."""
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
-from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -62,7 +61,7 @@ class Settings(BaseSettings):
 
 
 # Singleton instance
-_settings: Optional[Settings] = None
+_settings: Settings | None = None
 
 
 def get_settings() -> Settings:

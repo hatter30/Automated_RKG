@@ -1,5 +1,5 @@
 """Web search node for LangGraph workflow."""
-from typing import Dict, Any, List
+from typing import Any
 import logging
 from src.models.state import ResearchState
 from src.services.brave_search_service import BraveSearchService
@@ -18,7 +18,7 @@ def create_web_searcher_node(brave_service: BraveSearchService):
         Node function for web searching
     """
 
-    def search_web_node(state: ResearchState) -> Dict[str, Any]:
+    def search_web_node(state: ResearchState) -> dict[str, Any]:
         """
         Execute web searches for all generated queries.
 
@@ -30,8 +30,8 @@ def create_web_searcher_node(brave_service: BraveSearchService):
         """
         logger.info(f"Searching web for {len(state['search_queries'])} queries")
 
-        all_results: List[Dict[str, Any]] = []
-        errors: List[str] = []
+        all_results: list[dict[str, Any]] = []
+        errors: list[str] = []
 
         for query in state["search_queries"]:
             try:

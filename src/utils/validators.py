@@ -1,10 +1,9 @@
 """Validation utilities for data quality."""
-from typing import List
 from ..models.concept import Concept
 from ..models.relationship import Relationship
 
 
-def validate_concepts(concepts: List[Concept]) -> List[str]:
+def validate_concepts(concepts: list[Concept]) -> list[str]:
     """
     Validate extracted concepts and return list of issues.
 
@@ -28,8 +27,8 @@ def validate_concepts(concepts: List[Concept]) -> List[str]:
 
 
 def validate_relationships(
-    relationships: List[Relationship], concepts: List[Concept]
-) -> List[str]:
+    relationships: list[Relationship], concepts: list[Concept]
+) -> list[str]:
     """
     Validate relationships reference valid concepts.
 

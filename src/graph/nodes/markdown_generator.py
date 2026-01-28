@@ -1,5 +1,5 @@
 """Markdown generation node for LangGraph workflow."""
-from typing import Dict, Any
+from typing import Any
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -21,7 +21,7 @@ def create_markdown_generator_node(output_dir: str):
         Node function for markdown generation
     """
 
-    def generate_markdown_node(state: ResearchState) -> Dict[str, Any]:
+    def generate_markdown_node(state: ResearchState) -> dict[str, Any]:
         """
         Generate Logseq-compatible markdown from concepts and relationships.
 

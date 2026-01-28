@@ -1,6 +1,5 @@
 """Concept data model for extracted entities."""
 from pydantic import BaseModel, Field
-from typing import List, Optional
 from enum import Enum
 from .citation import Citation
 
@@ -23,16 +22,16 @@ class Concept(BaseModel):
     name: str = Field(..., description="Canonical concept name")
     concept_type: ConceptType
     description: str
-    citations: List[Citation] = Field(default_factory=list)
-    aliases: List[str] = Field(default_factory=list)
+    citations: list[Citation] = Field(default_factory=list)
+    aliases: list[str] = Field(default_factory=list)
     is_inferred: bool = False  # True if inferred, False if directly extracted
     relevance_score: float = Field(default=0.5, ge=0.0, le=1.0, description="Relevance to research topic (0.0-1.0)")
 
     # Detailed sections for learning/implementation
-    technical_details: Optional[str] = Field(default=None, description="Technical details and how it works")
-    key_components: Optional[List[str]] = Field(default=None, description="Key components or characteristics")
-    implementation_notes: Optional[str] = Field(default=None, description="Implementation guidance and notes")
-    use_cases: Optional[List[str]] = Field(default=None, description="Practical use cases or applications")
+    technical_details: str | None = Field(default=None, description="Technical details and how it works")
+    key_components: list[str] | None = Field(default=None, description="Key components or characteristics")
+    implementation_notes: str | None = Field(default=None, description="Implementation guidance and notes")
+    use_cases: list[str] | None = Field(default=None, description="Practical use cases or applications")
 
     def to_wikilink(self) -> str:
         """Format as Logseq wikilink."""

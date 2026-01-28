@@ -1,6 +1,5 @@
 """Relationship data model for connections between concepts."""
 from pydantic import BaseModel, Field
-from typing import List, Optional
 from enum import Enum
 from .citation import Citation
 
@@ -23,8 +22,8 @@ class Relationship(BaseModel):
     source: str = Field(..., description="Source concept name")
     relation_type: RelationType
     target: str = Field(..., description="Target concept name")
-    description: Optional[str] = None
-    citations: List[Citation] = Field(default_factory=list)
+    description: str | None = None
+    citations: list[Citation] = Field(default_factory=list)
     is_inferred: bool = False
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
 

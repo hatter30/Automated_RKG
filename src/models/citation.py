@@ -1,6 +1,5 @@
 """Citation data model for source references."""
 from pydantic import BaseModel, HttpUrl, Field
-from typing import Optional
 from datetime import datetime
 
 
@@ -9,7 +8,7 @@ class Citation(BaseModel):
 
     url: HttpUrl
     title: str
-    snippet: Optional[str] = None
+    snippet: str | None = None
     accessed_at: datetime = Field(default_factory=datetime.utcnow)
 
     def to_markdown(self) -> str:
