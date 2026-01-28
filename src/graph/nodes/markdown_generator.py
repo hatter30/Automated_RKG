@@ -3,9 +3,9 @@ from typing import Any
 import logging
 from pathlib import Path
 from datetime import datetime
-from collections import defaultdict
 from src.models.state import ResearchState
 from src.utils.markdown_utils import sanitize_filename
+from src.utils.state_utils import increment_step_count
 
 logger = logging.getLogger(__name__)
 
@@ -39,28 +39,68 @@ def create_markdown_generator_node(output_dir: str):
             concepts = state["concepts"]
             relationships = state["relationships"]
 
+            # Find main concept (query entity - highest relevance or first)
+            main_concept = concepts[0] if concepts else None
+
             # Build markdown content
             lines = [
                 f"# {topic}",
                 "",
                 f"*Research conducted: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}*",
                 "",
-                "## Overview",
-                f"This knowledge graph was automatically generated for the research topic: **{topic}**",
-                "",
-                "## Key Concepts",
-                "",
             ]
 
-            # Group concepts by type
-            concepts_by_type = defaultdict(list)
-            for concept in concepts:
-                concepts_by_type[concept.concept_type].append(concept)
+            # Add main concept details
+            if main_concept:
+                lines.extend([
+                    "## Description",
+                    main_concept.description,
+                    "",
+                ])
 
-            for concept_type, concept_list in sorted(concepts_by_type.items()):
-                lines.append(f"### {concept_type.value.title()}s")
-                for concept in sorted(concept_list, key=lambda c: c.name):
-                    lines.append(f"- {concept.to_wikilink()}")
+                if main_concept.technical_details:
+                    lines.extend([
+                        "## Technical Details",
+                        main_concept.technical_details,
+                        "",
+                    ])
+
+                if main_concept.key_components:
+                    lines.extend([
+                        "## Key Components",
+                        "",
+                    ])
+                    for component in main_concept.key_components:
+                        lines.append(f"- {component}")
+                    lines.append("")
+
+                if main_concept.implementation_notes:
+                    lines.extend([
+                        "## Implementation Notes",
+                        main_concept.implementation_notes,
+                        "",
+                    ])
+
+                if main_concept.use_cases:
+                    lines.extend([
+                        "## Use Cases",
+                        "",
+                    ])
+                    for use_case in main_concept.use_cases:
+                        lines.append(f"- {use_case}")
+                    lines.append("")
+
+            # Add related concepts section (sub-concepts excluding main)
+            main_name = main_concept.name if main_concept else ""
+            sub_concepts = [c for c in concepts if c.name != main_name]
+            if sub_concepts:
+                lines.extend([
+                    "## Related Concepts",
+                    "",
+                ])
+                for concept in sorted(sub_concepts, key=lambda c: c.relevance_score, reverse=True):
+                    desc_text = concept.description[:100] + "..." if len(concept.description) > 100 else concept.description
+                    lines.append(f"- {concept.to_wikilink()}: {desc_text}")
                 lines.append("")
 
             # Add relationships section
@@ -115,9 +155,15 @@ def create_markdown_generator_node(output_dir: str):
             markdown_content = "\n".join(lines)
             main_file.write_text(markdown_content, encoding="utf-8")
 
-            # Write individual concept pages
+            # Write individual concept pages (skip main concept to avoid overwriting)
+            main_filename = sanitize_filename(topic)
             for concept in concepts:
-                concept_file = output_path / f"{sanitize_filename(concept.name)}.md"
+                concept_filename = sanitize_filename(concept.name)
+                # Skip if this would overwrite the main topic page
+                if concept_filename == main_filename:
+                    continue
+
+                concept_file = output_path / f"{concept_filename}.md"
                 concept_markdown = concept.to_markdown_page()
 
                 # Add relationships involving this concept
@@ -139,7 +185,7 @@ def create_markdown_generator_node(output_dir: str):
             return {
                 "markdown_output": markdown_content,
                 "output_path": str(main_file),
-                "step_count": state.get("step_count", 0) + 1,
+                "step_count": increment_step_count(state),
             }
 
         except Exception as e:
@@ -149,7 +195,7 @@ def create_markdown_generator_node(output_dir: str):
                 "errors": [error_msg],
                 "markdown_output": "",
                 "output_path": "",
-                "step_count": state.get("step_count", 0) + 1,
+                "step_count": increment_step_count(state),
             }
 
     return generate_markdown_node

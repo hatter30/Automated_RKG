@@ -1,17 +1,19 @@
 """Entity extraction node for LangGraph workflow."""
 from typing import Any
-import json
 import logging
 import asyncio
 from src.models.state import ResearchState
 from src.models.concept import Concept, ConceptType
-from src.models.citation import Citation
 from src.services.openai_service import OpenAIService
 from src.services.concept_normalizer import ConceptNormalizer
 from src.prompts.entity_extraction import (
     ENTITY_EXTRACTION_SYSTEM_PROMPT,
     ENTITY_EXTRACTION_USER_PROMPT,
 )
+from src.utils.json_utils import parse_json_response
+from src.utils.prompt_utils import format_search_results
+from src.utils.state_utils import increment_step_count
+from src.utils.concept_utils import create_citation_from_search_result, merge_concepts
 from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -48,12 +50,7 @@ def create_entity_extractor_node(
 
         try:
             # Format batch for prompt
-            batch_text = "\n\n".join(
-                [
-                    f"Source: {r['title']}\nURL: {r['url']}\nContent: {r['description']}"
-                    for r in batch
-                ]
-            )
+            batch_text = format_search_results(batch)
 
             # Call OpenAI asynchronously
             response = await openai_service.generate_structured_output_async(
@@ -65,7 +62,7 @@ def create_entity_extractor_node(
             )
 
             # Parse response
-            extracted_data = json.loads(response)
+            extracted_data = parse_json_response(response)
 
             for concept_data in extracted_data.get("concepts", []):
                 # Normalize concept name
@@ -73,14 +70,14 @@ def create_entity_extractor_node(
 
                 # Create concept with citations
                 citations = [
-                    Citation(url=r["url"], title=r["title"], snippet=r["description"])
+                    create_citation_from_search_result(r)
                     for r in batch
                     if concept_data["name"].lower() in r["description"].lower()
                 ]
 
                 concept = Concept(
                     name=canonical_name,
-                    concept_type=ConceptType(concept_data["type"]),
+                    concept_type=ConceptType.from_string(concept_data["type"]),
                     description=concept_data["description"],
                     citations=citations,
                     aliases=concept_data.get("aliases", []),
@@ -143,37 +140,8 @@ def create_entity_extractor_node(
 
         logger.info(f"Extracted {len(concepts)} concepts (before deduplication)")
 
-        # Deduplicate concepts (merge duplicates)
-        concept_map = {}
-        for concept in concepts:
-            # Use normalizer to get canonical name (handles plurals, parentheses, unicode, etc.)
-            canonical = normalizer.normalize(concept.name)
-
-            if canonical in concept_map:
-                # Merge with existing: keep higher score, combine citations and aliases
-                existing = concept_map[canonical]
-                if concept.relevance_score > existing.relevance_score:
-                    existing.relevance_score = concept.relevance_score
-                    existing.description = concept.description  # Use better description
-                    existing.technical_details = concept.technical_details
-                    existing.key_components = concept.key_components
-                    existing.implementation_notes = concept.implementation_notes
-                    existing.use_cases = concept.use_cases
-                existing.citations.extend(concept.citations)
-                # Add original name to aliases if different
-                if concept.name != canonical:
-                    existing.aliases.append(concept.name)
-                existing.aliases.extend(concept.aliases)
-                # Remove duplicates from aliases
-                existing.aliases = list(set(existing.aliases))
-            else:
-                # Set normalized name and add original to aliases if different
-                if concept.name != canonical:
-                    concept.aliases.append(concept.name)
-                concept.name = canonical
-                concept_map[canonical] = concept
-
-        deduplicated = list(concept_map.values())
+        # Deduplicate concepts using shared utility
+        deduplicated = merge_concepts(concepts, normalizer)
         logger.info(f"After deduplication: {len(deduplicated)} concepts")
 
         # Filter to keep ONLY the query entity (exact match with research_topic)
@@ -202,7 +170,7 @@ def create_entity_extractor_node(
         return {
             "concepts": top_concepts,
             "errors": errors,
-            "step_count": state.get("step_count", 0) + 1,
+            "step_count": increment_step_count(state),
         }
 
     return extract_entities_node

@@ -3,6 +3,7 @@ from typing import Any
 import logging
 from src.models.state import ResearchState
 from src.services.brave_search_service import BraveSearchService
+from src.utils.state_utils import increment_step_count
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ def create_web_searcher_node(brave_service: BraveSearchService):
         return {
             "search_results": all_results,
             "errors": errors,
-            "step_count": state.get("step_count", 0) + 1,
+            "step_count": increment_step_count(state),
         }
 
     return search_web_node

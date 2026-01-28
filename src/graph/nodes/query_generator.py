@@ -1,6 +1,5 @@
 """Query generation node for LangGraph workflow."""
 from typing import Any
-import json
 import logging
 from src.models.state import ResearchState
 from src.services.openai_service import OpenAIService
@@ -8,6 +7,8 @@ from src.prompts.query_generation import (
     QUERY_GENERATION_SYSTEM_PROMPT,
     QUERY_GENERATION_USER_PROMPT,
 )
+from src.utils.json_utils import parse_json_response
+from src.utils.state_utils import increment_step_count
 
 logger = logging.getLogger(__name__)
 
@@ -46,19 +47,19 @@ def create_query_generator_node(openai_service: OpenAIService):
             )
 
             # Parse JSON response
-            queries_data = json.loads(response)
+            queries_data = parse_json_response(response)
             queries = queries_data.get("queries", [])
 
             logger.info(f"Generated {len(queries)} queries")
 
-            return {"search_queries": queries, "step_count": state.get("step_count", 0) + 1}
+            return {"search_queries": queries, "step_count": increment_step_count(state)}
 
         except Exception as e:
             logger.error(f"Query generation failed: {e}")
             return {
                 "errors": [f"Query generation error: {str(e)}"],
                 "search_queries": [state["research_topic"]],  # Fallback to topic itself
-                "step_count": state.get("step_count", 0) + 1,
+                "step_count": increment_step_count(state),
             }
 
     return generate_queries_node

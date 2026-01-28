@@ -4,13 +4,15 @@ import logging
 import json
 from src.models.state import ResearchState
 from src.models.concept import Concept, ConceptType
-from src.models.citation import Citation
 from src.services.concept_normalizer import ConceptNormalizer
 from src.services.openai_service import OpenAIService
 from src.prompts.entity_extraction import (
     ENTITY_EXTRACTION_SYSTEM_PROMPT,
     ENTITY_EXTRACTION_USER_PROMPT,
 )
+from src.utils.json_utils import parse_json_response
+from src.utils.prompt_utils import format_search_results
+from src.utils.state_utils import increment_step_count
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +44,7 @@ def _enrich_components(
     enriched_components = []
 
     # Format search results once
-    results_text = []
-    for i, result in enumerate(search_results[:50], 1):  # Limit to 50 results
-        results_text.append(
-            f"Source: {result.get('title', 'No title')}\n"
-            f"URL: {result.get('url', 'No URL')}\n"
-            f"Content: {result.get('description', 'No description')}"
-        )
-    search_results_text = "\n\n".join(results_text)
+    search_results_text = format_search_results(search_results, limit=50)
 
     # Extract detailed information for each component using entity extraction prompt
     for component in components:
@@ -70,16 +65,7 @@ def _enrich_components(
             )
 
             # Parse response
-            response_clean = response.strip()
-            if response_clean.startswith("```json"):
-                response_clean = response_clean[7:]
-            if response_clean.startswith("```"):
-                response_clean = response_clean[3:]
-            if response_clean.endswith("```"):
-                response_clean = response_clean[:-3]
-            response_clean = response_clean.strip()
-
-            result_data = json.loads(response_clean)
+            result_data = parse_json_response(response)
             concepts_data = result_data.get("concepts", [])
 
             # Find the matching concept in the response
@@ -267,7 +253,7 @@ def create_component_expander_node(openai_service: OpenAIService):
 
             return {
                 "concepts": final_concepts,
-                "step_count": state.get("step_count", 0) + 1,
+                "step_count": increment_step_count(state),
             }
 
         except Exception as e:
@@ -275,7 +261,7 @@ def create_component_expander_node(openai_service: OpenAIService):
             logger.error(error_msg)
             return {
                 "errors": [error_msg],
-                "step_count": state.get("step_count", 0) + 1,
+                "step_count": increment_step_count(state),
             }
 
     return expand_components_node

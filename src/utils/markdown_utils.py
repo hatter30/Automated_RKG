@@ -1,5 +1,4 @@
 """Utilities for markdown formatting."""
-from typing import Any
 import re
 
 
@@ -21,48 +20,3 @@ def sanitize_filename(filename: str) -> str:
     filename = filename.strip('_')
     # Limit length
     return filename[:200] if len(filename) > 200 else filename
-
-
-def format_logseq_page(
-    title: str, sections: dict[str, list[str]], metadata: dict[str, Any] | None = None
-) -> str:
-    """
-    Format a Logseq page with proper structure.
-
-    Args:
-        title: Page title
-        sections: Dict of section_name -> list of content lines
-        metadata: Optional metadata dict
-
-    Returns:
-        Formatted markdown string
-    """
-    lines = [f"# {title}", ""]
-
-    if metadata:
-        for key, value in metadata.items():
-            lines.append(f"**{key}**: {value}")
-        lines.append("")
-
-    for section_name, content in sections.items():
-        lines.append(f"## {section_name}")
-        lines.extend(content)
-        lines.append("")
-
-    return "\n".join(lines)
-
-
-def escape_markdown(text: str) -> str:
-    """
-    Escape special markdown characters.
-
-    Args:
-        text: Text to escape
-
-    Returns:
-        Escaped text
-    """
-    special_chars = ["*", "_", "[", "]", "(", ")", "#", "+", "-", "!"]
-    for char in special_chars:
-        text = text.replace(char, f"\\{char}")
-    return text

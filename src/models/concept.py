@@ -14,6 +14,62 @@ class ConceptType(str, Enum):
     FIELD = "field"
     APPLICATION = "application"
     METRIC = "metric"
+    LIBRARY = "library"
+    FRAMEWORK = "framework"
+    PROJECT = "project"
+    CONCEPT = "concept"
+    TOOL = "tool"
+    LANGUAGE = "language"
+    ALGORITHM = "algorithm"
+    PATTERN = "pattern"
+
+    @classmethod
+    def from_string(cls, value: str) -> "ConceptType":
+        """
+        Convert string to ConceptType with fallback handling.
+
+        Args:
+            value: String value to convert
+
+        Returns:
+            Matching ConceptType or CONCEPT as default
+        """
+        value_lower = value.lower().strip()
+
+        # Try direct match
+        for member in cls:
+            if member.value == value_lower:
+                return member
+
+        # Mapping for common variations
+        mapping = {
+            "lib": cls.LIBRARY,
+            "package": cls.LIBRARY,
+            "module": cls.LIBRARY,
+            "sdk": cls.LIBRARY,
+            "api": cls.TECHNOLOGY,
+            "platform": cls.TECHNOLOGY,
+            "system": cls.TECHNOLOGY,
+            "service": cls.APPLICATION,
+            "technique": cls.METHOD,
+            "approach": cls.METHOD,
+            "process": cls.METHOD,
+            "standard": cls.CONCEPT,
+            "principle": cls.CONCEPT,
+            "theory": cls.CONCEPT,
+            "model": cls.METHOD,
+            "architecture": cls.PATTERN,
+            "design": cls.PATTERN,
+            "company": cls.ORGANIZATION,
+            "institute": cls.ORGANIZATION,
+            "university": cls.ORGANIZATION,
+        }
+
+        if value_lower in mapping:
+            return mapping[value_lower]
+
+        # Default fallback
+        return cls.CONCEPT
 
 
 class Concept(BaseModel):

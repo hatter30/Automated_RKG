@@ -1,7 +1,6 @@
 """Service for interacting with OpenAI API."""
 from openai import OpenAI, AsyncOpenAI
 import logging
-import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)

@@ -5,7 +5,9 @@
       "Bash(python -m src.main:*)",
       "Bash(ls:*)",
       "Bash(tee:*)",
-      "Bash(gh pr list:*)"
+      "Bash(gh pr list:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(python:*)"
     ],
     "additionalDirectories": [
       "d:\\june5\\Automated_RKG\\output\\logseq"

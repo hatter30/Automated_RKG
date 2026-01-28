@@ -1,15 +1,17 @@
 """Relationship inference node for LangGraph workflow."""
 from typing import Any
-import json
 import logging
 from src.models.state import ResearchState
 from src.models.relationship import Relationship, RelationType
-from src.models.citation import Citation
 from src.services.openai_service import OpenAIService
 from src.prompts.relationship_inference import (
     RELATIONSHIP_INFERENCE_SYSTEM_PROMPT,
     RELATIONSHIP_INFERENCE_USER_PROMPT,
 )
+from src.utils.json_utils import parse_json_response
+from src.utils.prompt_utils import format_search_results
+from src.utils.state_utils import increment_step_count
+from src.utils.concept_utils import create_citation_from_search_result
 
 logger = logging.getLogger(__name__)
 
@@ -50,12 +52,7 @@ def create_relationship_inferrer_node(openai_service: OpenAIService):
             )
 
             # Format search results context
-            context_text = "\n\n".join(
-                [
-                    f"Source: {r['title']}\nURL: {r['url']}\nContent: {r['description']}"
-                    for r in state["search_results"][:10]  # Use top 10 results for context
-                ]
-            )
+            context_text = format_search_results(state["search_results"], limit=10)
 
             # Call OpenAI
             response = openai_service.generate_structured_output(
@@ -67,26 +64,20 @@ def create_relationship_inferrer_node(openai_service: OpenAIService):
             )
 
             # Parse response
-            relationships_data = json.loads(response)
+            relationships_data = parse_json_response(response)
 
             for rel_data in relationships_data.get("relationships", []):
                 # Determine if relationship is fact or inference
                 is_inferred = rel_data.get("is_inferred", True)
 
                 # Create citations if provided
-                citations: list[Citation] = []
+                citations = []
                 if "source_urls" in rel_data:
                     for url in rel_data["source_urls"]:
                         # Find matching search result
                         matching = [r for r in state["search_results"] if r["url"] == url]
                         if matching:
-                            citations.append(
-                                Citation(
-                                    url=matching[0]["url"],
-                                    title=matching[0]["title"],
-                                    snippet=matching[0]["description"],
-                                )
-                            )
+                            citations.append(create_citation_from_search_result(matching[0]))
 
                 relationship = Relationship(
                     source=rel_data["source"],
@@ -110,7 +101,7 @@ def create_relationship_inferrer_node(openai_service: OpenAIService):
         return {
             "relationships": relationships,
             "errors": errors,
-            "step_count": state.get("step_count", 0) + 1,
+            "step_count": increment_step_count(state),
         }
 
     return infer_relationships_node
