@@ -63,6 +63,17 @@ def merge_concepts(
                 existing.key_components = concept.key_components
                 existing.implementation_notes = concept.implementation_notes
                 existing.use_cases = concept.use_cases
+                # Also use code fields from higher relevance concept
+                existing.code_snippets = concept.code_snippets
+                existing.pseudocode = concept.pseudocode
+                existing.logic_flow = concept.logic_flow
+            else:
+                # Merge code snippets and pseudocode from both sources
+                existing.code_snippets.extend(concept.code_snippets)
+                existing.pseudocode.extend(concept.pseudocode)
+                # Keep existing logic_flow if present, otherwise use new one
+                if not existing.logic_flow and concept.logic_flow:
+                    existing.logic_flow = concept.logic_flow
 
             # Merge citations (avoid duplicates by URL)
             existing_urls = {c.url for c in existing.citations}

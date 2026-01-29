@@ -38,6 +38,7 @@ def create_markdown_generator_node(output_dir: str):
             topic = state["research_topic"]
             concepts = state["concepts"]
             relationships = state["relationships"]
+            github_code = state.get("github_code_results", [])
 
             # Find main concept (query entity - highest relevance or first)
             main_concept = concepts[0] if concepts else None
@@ -89,6 +90,75 @@ def create_markdown_generator_node(output_dir: str):
                     for use_case in main_concept.use_cases:
                         lines.append(f"- {use_case}")
                     lines.append("")
+
+                # Core Logic Flow section (most important for re-implementation)
+                if main_concept.logic_flow:
+                    lines.extend([
+                        "## Core Logic Flow",
+                        "",
+                        main_concept.logic_flow.to_markdown(),
+                    ])
+
+                # Python Implementation section
+                if main_concept.pseudocode:
+                    lines.extend([
+                        "## Python Implementation",
+                        "",
+                    ])
+                    for idx, block in enumerate(main_concept.pseudocode, 1):
+                        if len(main_concept.pseudocode) > 1:
+                            lines.append(f"### Algorithm {idx}")
+                            lines.append("")
+                        lines.append(block.to_markdown())
+                        lines.append("")
+
+                # Code Examples section (from entity extraction - may not be accurate)
+                if main_concept.code_snippets:
+                    lines.extend([
+                        "## Code Examples",
+                        "",
+                    ])
+                    for idx, block in enumerate(main_concept.code_snippets, 1):
+                        if len(main_concept.code_snippets) > 1:
+                            lines.append(f"### Example {idx}")
+                            lines.append("")
+                        lines.append(block.to_markdown())
+                        lines.append("")
+
+            # GitHub Code Examples section (real code from GitHub)
+            code_items = [item for item in github_code if item.get("type") == "code"]
+            if code_items:
+                lines.extend([
+                    "## GitHub Code Examples",
+                    "",
+                    "*실제 GitHub 저장소에서 가져온 코드입니다.*",
+                    "",
+                ])
+                for idx, item in enumerate(code_items, 1):
+                    lines.append(f"### {item.get('name', f'Example {idx}')}")
+                    lines.append("")
+                    lines.append(f"**Repository**: [{item.get('repository', 'Unknown')}]({item.get('url', '#')})")
+                    lines.append(f"**Path**: `{item.get('path', '')}`")
+                    lines.append("")
+                    lines.append(f"```{item.get('language', 'python')}")
+                    lines.append(item.get("content", ""))
+                    lines.append("```")
+                    lines.append("")
+
+            # GitHub Repositories section
+            repo_items = [item for item in github_code if item.get("type") == "repository"]
+            if repo_items:
+                lines.extend([
+                    "## Related GitHub Repositories",
+                    "",
+                ])
+                for repo in repo_items:
+                    stars = repo.get("stars", 0)
+                    desc = repo.get("description", "")[:100] if repo.get("description") else ""
+                    lines.append(f"- [{repo.get('full_name', '')}]({repo.get('url', '#')}) ⭐ {stars}")
+                    if desc:
+                        lines.append(f"  - {desc}")
+                lines.append("")
 
             # Add related concepts section (sub-concepts excluding main)
             main_name = main_concept.name if main_concept else ""

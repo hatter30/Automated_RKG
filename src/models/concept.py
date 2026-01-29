@@ -2,6 +2,7 @@
 from pydantic import BaseModel, Field
 from enum import Enum
 from .citation import Citation
+from .code_block import CodeBlock, LogicFlow
 
 
 class ConceptType(str, Enum):
@@ -89,6 +90,11 @@ class Concept(BaseModel):
     implementation_notes: str | None = Field(default=None, description="Implementation guidance and notes")
     use_cases: list[str] | None = Field(default=None, description="Practical use cases or applications")
 
+    # Code storage fields for re-implementation
+    code_snippets: list[CodeBlock] = Field(default_factory=list, description="Actual code examples")
+    pseudocode: list[CodeBlock] = Field(default_factory=list, description="Pseudocode/algorithm representations")
+    logic_flow: LogicFlow | None = Field(default=None, description="Core logic flow for re-implementation")
+
     def to_wikilink(self) -> str:
         """Format as Logseq wikilink."""
         return f"[[{self.name}]]"
@@ -144,6 +150,46 @@ class Concept(BaseModel):
                     "",
                 ]
             )
+
+        # Core Logic Flow section (most important for re-implementation)
+        if self.logic_flow:
+            lines.extend(
+                [
+                    "## Core Logic Flow",
+                    "",
+                    self.logic_flow.to_markdown(),
+                ]
+            )
+
+        # Python Implementation section
+        if self.pseudocode:
+            lines.extend(
+                [
+                    "## Python Implementation",
+                    "",
+                ]
+            )
+            for idx, block in enumerate(self.pseudocode, 1):
+                if len(self.pseudocode) > 1:
+                    lines.append(f"### Algorithm {idx}")
+                    lines.append("")
+                lines.append(block.to_markdown())
+                lines.append("")
+
+        # Code Examples section
+        if self.code_snippets:
+            lines.extend(
+                [
+                    "## Code Examples",
+                    "",
+                ]
+            )
+            for idx, block in enumerate(self.code_snippets, 1):
+                if len(self.code_snippets) > 1:
+                    lines.append(f"### Example {idx}")
+                    lines.append("")
+                lines.append(block.to_markdown())
+                lines.append("")
 
         if self.aliases:
             lines.extend(

@@ -4,6 +4,7 @@ from pathlib import Path
 from config.settings import get_settings
 from src.services.openai_service import OpenAIService
 from src.services.brave_search_service import BraveSearchService
+from src.services.github_search_service import GitHubSearchService
 from src.services.concept_normalizer import ConceptNormalizer
 from src.graph.workflow import create_research_workflow
 from src.models.state import ResearchState
@@ -36,6 +37,8 @@ def run_research(topic: str, output_dir: str | None = None) -> str:
         api_key=settings.brave_search_api_key, max_results=settings.max_search_results
     )
 
+    github_service = GitHubSearchService(token=settings.github_token)
+
     normalizer = ConceptNormalizer()
 
     # Determine output directory
@@ -45,6 +48,7 @@ def run_research(topic: str, output_dir: str | None = None) -> str:
     workflow = create_research_workflow(
         openai_service=openai_service,
         brave_service=brave_service,
+        github_service=github_service,
         normalizer=normalizer,
         output_dir=final_output_dir,
     )
@@ -54,6 +58,7 @@ def run_research(topic: str, output_dir: str | None = None) -> str:
         "research_topic": topic,
         "search_queries": [],
         "search_results": [],
+        "github_code_results": [],
         "concepts": [],
         "relationships": [],
         "markdown_output": "",

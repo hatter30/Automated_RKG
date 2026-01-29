@@ -14,6 +14,7 @@ from src.utils.json_utils import parse_json_response
 from src.utils.prompt_utils import format_search_results
 from src.utils.state_utils import increment_step_count
 from src.utils.concept_utils import create_citation_from_search_result, merge_concepts
+from src.utils.code_utils import parse_code_blocks, parse_logic_flow
 from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,10 @@ def create_entity_extractor_node(
                     key_components=concept_data.get("key_components"),
                     implementation_notes=concept_data.get("implementation_notes"),
                     use_cases=concept_data.get("use_cases"),
+                    # Code storage fields
+                    code_snippets=parse_code_blocks(concept_data.get("code_snippets")),
+                    pseudocode=parse_code_blocks(concept_data.get("pseudocode")),
+                    logic_flow=parse_logic_flow(concept_data.get("logic_flow")),
                 )
 
                 batch_concepts.append(concept)

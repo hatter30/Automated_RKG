@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     # API Keys
     openai_api_key: str
     brave_search_api_key: str
+    github_token: str | None = None  # Optional: for higher rate limits on GitHub API
 
     @field_validator('openai_api_key', 'brave_search_api_key')
     @classmethod
@@ -41,6 +42,7 @@ class Settings(BaseSettings):
     # Search Configuration
     max_search_results: int = 10
     max_queries_per_topic: int = 5
+    max_github_code_results: int = 3  # Number of code examples to fetch from GitHub
 
     # Output Configuration
     output_dir: str = "output/logseq"

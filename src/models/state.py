@@ -17,6 +17,9 @@ class ResearchState(TypedDict):
     # Web Search
     search_results: Annotated[list[dict[str, Any]], add]  # Raw search results
 
+    # GitHub Code Search
+    github_code_results: Annotated[list[dict[str, Any]], add]  # Code from GitHub
+
     # Entity Extraction
     concepts: Annotated[list[Concept], add]
 
